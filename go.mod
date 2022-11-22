@@ -1,4 +1,4 @@
-module github.com/lishuangquan1987/reconnecttcp
+module github.com/utils-go/reconnecttcp
 
 go 1.19
 
