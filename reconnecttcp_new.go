@@ -23,21 +23,18 @@ type ReconnectTcpNew struct {
 	con net.Conn
 	//ip地址与端口
 	ipStr string
-	//发生错误事件
-	reconnectChan chan struct{}
 	//标识是否关闭
 	chClose chan struct{}
 }
 
 func NewReconnectTcpNew(ipStr string) *ReconnectTcpNew {
 	t := &ReconnectTcpNew{
-		wBuffer:       make(chan []byte, 100),
-		chWriteErr:    make(chan struct{}, 5),
-		rBuffer:       concurrentlist.NewListT[[]byte](),
-		chReadErr:     make(chan struct{}, 5),
-		ipStr:         ipStr,
-		reconnectChan: make(chan struct{}, 2),
-		chClose:       make(chan struct{}),
+		wBuffer:    make(chan []byte, 100),
+		chWriteErr: make(chan struct{}, 5),
+		rBuffer:    concurrentlist.NewListT[[]byte](),
+		chReadErr:  make(chan struct{}, 5),
+		ipStr:      ipStr,
+		chClose:    make(chan struct{}),
 	}
 	go t.initConnect()
 	return t
@@ -80,20 +77,12 @@ func (t *ReconnectTcpNew) handWrite(wg *sync.WaitGroup) {
 }
 func (t *ReconnectTcpNew) initConnect() {
 	for {
-		select {
-		case <-t.chClose:
-			return
-		case <-t.reconnectChan:
-			//清空reconnectChan
-			t.reconnectChan = make(chan struct{}, 2)
-			break
-		}
 		var err error
 		t.con, err = net.Dial("tcp", t.ipStr)
 		if err != nil {
 			time.Sleep(time.Millisecond * 100)
-			t.reconnectChan <- struct{}{}
 			fmt.Printf("[initConnect] fail %v,ipStr:%s\n", err, t.ipStr)
+			continue
 		}
 		fmt.Printf("connect %s success\n", t.ipStr)
 		t.wBuffer = make(chan []byte, 100)
@@ -103,6 +92,13 @@ func (t *ReconnectTcpNew) initConnect() {
 		go t.handleRead(&wg)
 		go t.handWrite(&wg)
 		wg.Wait()
+		//这里结束，可能是接收错误，也可能是发送错误，更有可能是人为关闭了ReconnectTcpNew
+		select {
+		case <-t.chClose:
+			return
+		default:
+			break
+		}
 	}
 }
 
@@ -114,7 +110,7 @@ func (t *ReconnectTcpNew) Read() []byte {
 	if len(buffer) <= 0 {
 		return nil
 	}
-	r := make([]byte, 10240)
+	r := make([]byte, 0, 10240)
 	n := 0
 	for _, bytes := range buffer {
 		r = append(r, bytes...)
@@ -123,7 +119,7 @@ func (t *ReconnectTcpNew) Read() []byte {
 	return r[0:n]
 }
 func (t *ReconnectTcpNew) Close() {
-	//关闭连接
+	//关闭连接,会触发read 和 write线程停止
 	if t.con != nil {
 		t.con.Close()
 	}
