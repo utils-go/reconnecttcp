@@ -33,7 +33,7 @@ func NewReconnectTcpNew(ipStr string) *ReconnectTcpNew {
 	t := &ReconnectTcpNew{
 		wBuffer:       make(chan []byte, 100),
 		chWriteErr:    make(chan struct{}, 5),
-		rBuffer:       concurrentlist.NewList[[]byte](),
+		rBuffer:       concurrentlist.NewListT[[]byte](),
 		chReadErr:     make(chan struct{}, 5),
 		ipStr:         ipStr,
 		reconnectChan: make(chan struct{}, 2),
