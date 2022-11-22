@@ -8,7 +8,7 @@ import (
 
 func main() {
 	addr := "127.0.0.1:5001"
-	client := reconnecttcp.NewReconnectTcpNew(addr)
+	client := reconnecttcp.NewReconnectTcp(addr)
 	go func() {
 		for {
 			data := client.Read()

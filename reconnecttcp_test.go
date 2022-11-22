@@ -48,7 +48,7 @@ import (
 
 func TestReConnectionNew(t *testing.T) {
 	addr := "127.0.0.1:5001"
-	client := NewReconnectTcpNew(addr)
+	client := NewReconnectTcp(addr)
 	go func() {
 		data := client.Read()
 		if data != nil {
