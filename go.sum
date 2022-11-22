@@ -1,2 +1,4 @@
 github.com/utils-go/concurrentlist v0.0.3 h1:TlUXeTJ/AcsZdfHfWodyqCeheBTKQu63QZUA0YHYzI0=
 github.com/utils-go/concurrentlist v0.0.3/go.mod h1:4dGxRs2xSs4LXPQNYmMMrJ0lUYL+xCzzvJ0frDmPmAM=
+github.com/utils-go/concurrentlist v0.0.4 h1:rzJn0n7QUNTrGS4Hevx6QAd2EidOg9xrydcOrL8t/jw=
+github.com/utils-go/concurrentlist v0.0.4/go.mod h1:4dGxRs2xSs4LXPQNYmMMrJ0lUYL+xCzzvJ0frDmPmAM=
